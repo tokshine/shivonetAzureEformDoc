@@ -1,0 +1,27 @@
+CREATE DATABASE psdblive_1 ON  
+( NAME = psdblive_DATA, 
+FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\psdblive_1.ss' )  
+AS SNAPSHOT OF psdblive;  
+GO  
+
+USE master;  
+
+
+declare @execSql varchar(1000), @databaseName varchar(100)
+-- Set the database name for which to kill the connections
+set @databaseName = 'psdblive'
+set @execSql = ''
+select  @execSql = @execSql + 'kill ' +
+  CONVERT(char(10), spid) + ' '
+from    master.dbo.sysprocesses
+where   db_name(dbid) = @databaseName
+     AND DBID <> 0
+     AND spid <> @@spid
+exec(@execSql)
+
+RESTORE DATABASE psdblive from   
+DATABASE_SNAPSHOT = 'psdblive_1';  
+GO
+
+--DROP DATABASE psdblive_001#
+--https://www.mssqltips.com/sqlservertip/2721/how-to-revert-a-database-snapshot-to-recover-a-sql-server-database/
